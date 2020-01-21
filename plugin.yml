@@ -1,0 +1,4 @@
+name: BlockDataTest
+main: cosmicpe\blockdatatest\BlockDataTestPlugin
+api: 4.0.0
+version: 0.0.0
