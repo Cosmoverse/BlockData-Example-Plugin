@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace cosmicpe\blockdatatest;
 
 use cosmicpe\blockdata\BlockDataFactory;
-use cosmicpe\blockdata\BlockDataWorldManager;
+use cosmicpe\blockdata\world\BlockDataWorldManager;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\event\block\BlockBreakEvent;
+use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\ItemIds;
@@ -50,6 +51,18 @@ final class BlockDataTestPlugin extends PluginBase implements Listener{
 	}
 
 	/**
+	 * @param BlockPlaceEvent $event
+	 * @priority HIGH
+	 */
+	public function onBlockPlace(BlockPlaceEvent $event) : void{
+		$block = $event->getBlock();
+		if($block->getId() === BlockLegacyIds::GLASS){
+			$pos = $block->getPos();
+			$this->manager->get($pos->getWorld())->setBlockDataAt($pos->x, $pos->y, $pos->z, new DurableBlockData());
+		}
+	}
+
+	/**
 	 * @param BlockBreakEvent $event
 	 * @priority HIGH
 	 */
@@ -62,12 +75,14 @@ final class BlockDataTestPlugin extends PluginBase implements Listener{
 			/** @var DurableBlockData $data */
 			$data = $world->getBlockDataAt($pos->x, $pos->y, $pos->z);
 			if(!($data instanceof DurableBlockData)){
-				$world->setBlockDataAt($pos->x, $pos->y, $pos->z, $data = new DurableBlockData());
+				$data = new DurableBlockData();
 			}
 
 			if($data->decreaseDurability()){
 				$event->setCancelled();
 			}
+
+			$world->setBlockDataAt($pos->x, $pos->y, $pos->z, $data);
 		}
 	}
 }
